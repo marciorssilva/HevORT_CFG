@@ -1,0 +1,577 @@
+# This file contains common pin mappings for Duet2 Eth/Wifi boards
+# that have the Duex expansion board. To use this config, the firmware
+# should be compiled for the SAM4E8E.
+
+# See docs/Config_Reference.md for a description of parameters.
+
+## Drivers
+# Here are the pins for the 10 stepper drivers supported by a Duet2 board
+# | Drive |  DIR pin |  STEP pin |  ENDSTOP pin |  SPI EN pin |
+# |-------|----------|-----------|--------------|-------------|
+# | X     |  PD11    |  PD6      |  PC14        |  PD14       |
+# | Y     |  PD12    |  PD7      |  PA2         |  PC9        |
+# | Z     |  PD13    |  PD8      |  PD29        |  PC10       |
+# | E0    |  PA1     |  PD5      |  PD10        |  PC17       |
+# | E1    |  PD9     |  PD4      |  PC16        |  PC25       |
+# | E2    |  PD28    |  PD2      |  PE0*        |  PD23       |
+# | E3    |  PD22    |  PD1      |  PE1*        |  PD24       |
+# | E4    |  PD16    |  PD0      |  PE2*        |  PD25       |
+# | E5    |  PD17    |  PD3      |  PE3*        |  PD26       |
+# | E6    |  PC0     |  PD27     |  PA17*       |  PB14       |
+# Pins marked with asterisks (*) are only assigned to these functions
+# if no duex is connected. If a duex is connected, these endstops are
+# remapped to the SX1509 on the Duex (unfortunately they can't be used
+# as endstops in klipper, however one may use them as digital outs or
+# PWM outs). The SPI EN pins are required for the TMC2660 drivers (use
+# the SPI EN pin as 'cs_pin' in the respective config block). The
+# **enable pin for all steppers** is TMC_EN = !PC6.
+#
+## Fans
+# | FAN  |          PIN          |
+# |------|-----------------------|
+# | FAN0 |  PC23                 |
+# | FAN1 |  PC26                 |
+# | FAN2 |  PA0                  |
+# | FAN3 |  sx1509_duex:PIN_12*  |
+# | FAN4 |  sx1509_duex:PIN_7*   |
+# | FAN5 |  sx1509_duex:PIN_6*   |
+# | FAN6 |  sx1509_duex:PIN_5*   |
+# | FAN7 |  sx1509_duex:PIN_4*   |
+# | FAN8 |  sx1509_duex:PIN_15*  |
+# Pins marked with (*) assume the following sx1509 config section:
+#[sx1509 duex]
+#i2c_address: 62
+#
+## Heaters and Thermistors
+# | Extruder Drive |  HEAT pin |  TEMP pin |
+# |----------------|-----------|-----------|
+# | BED            |  PA19     |  PC13     |
+# | E0             |  PA20     |  PC15     |
+# | E1             |  PA16     |  PC12     |
+# | E2             |  PC3      |  PC29     |
+# | E3             |  PC5      |  PC30     |
+# | E4             |  PC8      |  PC31     |
+# | E5             |  PC11     |  PC27     |
+# | E6             |  PA15     |  PA18     |
+#
+## Misc pins
+# |    Name     |   Pin   |
+# |-------------|---------|
+# | ZProbe_IN   |  PC1    |
+# | PS_ON       |  PD15   |
+# | LED_ONBOARD |  PC2    |
+# | SPI0_CS0    |  PC24   |
+# | SPI0_CS1    |  PB2    |
+# | SPI0_CS2    |  PC18   |
+# | SPI0_CS3    |  PC19   |
+# | SPI0_CS4    |  PC20   |
+# | SPI0_CS5    |  PA24   |
+# | SPI0_CS6    |  PE1*   |
+# | SPI0_CS7    |  PE2*   |
+# | SPI0_CS8    |  PE3*   |
+# | SX1509_IRQ  |  PA17*  |
+# | SG_TST      |  PE0*   |
+# | ENC_SW      |  PA7    |
+# | ENC_A       |  PA8    |
+# | ENC_B       |  PC7    |
+# | LCD_DB7     |  PD18   |
+# | LCD_DB6     |  PD19   |
+# | LCD_DB5     |  PD20   |
+# | LCD_DB4     |  PD21   |
+# | LCD_RS      |  PC28   |
+# | LCD_E       |  PA25   |
+# Pins marked with one asterisk (*) replace E2_STOP-E6_STOP if a duex is present
+# For the remaining pins check the schematics provided here: https://github.com/T3P3/Duet
+# https://duet3d.dozuki.com/Wiki/Duet_2_Pinout_table
+
+
+[include macros.cfg]
+
+[include klicky-probe.cfg]
+
+[servo klicky_servo]
+pin: !PC8
+#   PWM output pin controlling the servo. This parameter must be
+#   provided.
+maximum_servo_angle: 180
+#   The maximum angle (in degrees) that this servo can be set to. The
+#   default is 180 degrees.
+minimum_pulse_width: 0.00025
+#   The minimum pulse width time (in seconds). This should correspond
+#   with an angle of 0 degrees. The default is 0.001 seconds.
+maximum_pulse_width: 0.0024
+#   The maximum pulse width time (in seconds). This should correspond
+#   with an angle of maximum_servo_angle. The default is 0.002
+#   seconds.
+
+
+####################################################################
+############################ XY Axis ###############################
+####################################################################
+
+#__________________________ ON DRIVE X ____________________________
+[stepper_x]
+step_pin: PD6
+dir_pin: PD11
+enable_pin: !PC6
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+endstop_pin: ^PC14
+position_endstop: 0
+position_max: 356
+homing_speed: 80
+homing_retract_dist: 5.0
+
+#second_homing_speed: 10 
+
+[tmc2660 stepper_x]
+cs_pin: PD14 				# X_SPI_EN Required for communication
+spi_bus: usart1 			# All TMC2660 drivers are connected to USART1
+interpolate: True 			# 1/16 micro-steps interpolated to 1/256
+run_current: 1.00
+sense_resistor: 0.051
+idle_current_percent:20
+#driver_TOFF: 8
+
+#__________________________ ON DRIVE Y ____________________________
+[stepper_y]
+step_pin: PD7
+dir_pin: PD12
+enable_pin: !PC6
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+endstop_pin: ^PA2
+position_endstop: 0
+position_max: 380
+homing_speed: 80
+homing_retract_dist: 5.0
+#second_homing_speed: 10 
+
+[tmc2660 stepper_y]
+cs_pin: PC9
+spi_bus: usart1
+interpolate: True
+run_current: 1.00
+sense_resistor: 0.051
+idle_current_percent: 20
+#driver_TOFF: 8
+
+####################################################################
+############################ Z Axis ################################
+####################################################################
+
+#__________________________ ON DRIVE Z ____________________________
+[stepper_z]
+step_pin: PD8
+dir_pin: PD13
+enable_pin: !PC6
+microsteps: 16
+rotation_distance: 4
+endstop_pin: probe:z_virtual_endstop
+position_max: 380
+position_min: -10
+
+[tmc2660 stepper_z]
+cs_pin: PC10
+spi_bus: usart1
+interpolate: True
+run_current: 0.800
+sense_resistor: 0.051
+
+#_________________________ ON DRIVE E2 ___________________________
+[stepper_z1]
+step_pin: PD2
+dir_pin: PD28
+enable_pin: !PC6
+microsteps: 16
+rotation_distance: 4 				
+full_steps_per_rotation: 200
+#gear_ratio: 5.18:1
+
+[tmc2660 stepper_z1]
+cs_pin: PD23
+spi_bus: usart1
+interpolate: True
+run_current: 0.800
+sense_resistor: 0.051
+
+
+#_________________________ ON DRIVE E3 ___________________________
+[stepper_z2]
+step_pin: PD1
+dir_pin: PD22
+enable_pin: !PC6
+microsteps: 16
+rotation_distance: 4 				
+full_steps_per_rotation: 200
+#gear_ratio: 5.18:1
+
+[tmc2660 stepper_z2]
+cs_pin: PD24
+spi_bus: usart1
+interpolate: True
+run_current: 0.800
+sense_resistor: 0.051
+
+
+#__________________________ BLTouch ______________________________
+#[bltouch]
+#sensor_pin: ^PC1		# ^ = Activate pullup resistor to avoid floating input
+#control_pin: !PA15		# ! = Active low
+#x_offset: 22.75
+#y_offset: 5.21
+#z_offset: 3
+#speed: 5
+#samples: 1
+#sample_retract_dist: 5 
+#samples_tolerance: 0.010
+
+
+#__________________________ KLICKY/AUTOLEV ______________________________
+[probe]
+pin: PD29 #!PC1(AUTOLEV)
+#   Probe detection pin. This parameter must be provided.
+x_offset: 0.0
+#   The distance (in mm) between the probe and the nozzle along the
+#   x-axis. The default is 0.
+y_offset: 15.0 #-42.0
+#   The distance (in mm) between the probe and the nozzle along the
+#   y-axis. The default is 0.
+#z_offset: 0.50
+#   The distance (in mm) between the bed and the nozzle when the probe
+#   triggers. This parameter must be provided.
+speed: 5
+#   Speed (in mm/s) of the Z axis when probing. The default is 5mm/s.
+samples: 2
+#   The number of times to probe each point. The probed z-values will
+#   be averaged. The default is to probe 1 time.
+sample_retract_dist: 5.0
+#   The distance (in mm) to lift the toolhead between each sample (if
+#   sampling more than once). The default is 2mm.
+#lift_speed:
+#   Speed (in mm/s) of the Z axis when lifting the probe between
+#   samples. The default is to use the same value as the 'speed'
+#   parameter.
+samples_result: average
+#   The calculation method when sampling more than once - either
+#   "median" or "average". The default is average.
+samples_tolerance: 0.10
+#   The maximum Z distance (in mm) that a sample may differ from other
+#   samples. If this tolerance is exceeded then either an error is
+#   reported or the attempt is restarted (see
+#   samples_tolerance_retries). The default is 0.100mm.
+samples_tolerance_retries: 2
+#   The number of times to retry if a sample is found that exceeds
+#   samples_tolerance. On a retry, all current samples are discarded
+#   and the probe attempt is restarted. If a valid set of samples are
+#   not obtained in the given number of retries then an error is
+#   reported. The default is zero which causes an error to be reported
+#   on the first sample that exceeds samples_tolerance.
+#activate_gcode:
+#   A list of G-Code commands to execute prior to each probe attempt.
+#   See docs/Command_Templates.md for G-Code format. This may be
+#   useful if the probe needs to be activated in some way. Do not
+#   issue any commands here that move the toolhead (eg, G1). The
+#   default is to not run any special G-Code commands on activation.
+#deactivate_gcode:
+#   A list of G-Code commands to execute after each probe attempt
+#   completes. See docs/Command_Templates.md for G-Code format. Do not
+#   issue any commands here that move the toolhead. The default is to
+#   not run any special G-Code commands on deactivation.
+
+
+#__________________ SELF LEVELLING (Z_Tilt) _______________________
+[z_tilt]
+z_positions: 
+	436.556,-10.411
+	-15.86,-10.411
+	210.349,410.799
+
+points:
+	10,10
+	180,380
+	350,10
+	#190,270
+speed: 150
+horizontal_move_z: 20
+retries: 5
+retry_tolerance: 0.05
+
+#retries: 0
+#   Number of times to retry if the probed points aren't within
+#   tolerance.
+#retry_tolerance: 0
+#   If retries are enabled then retry if largest and smallest probed
+#   points differ more than retry_tolerance. Note the smallest unit of
+#   change here would be a single step. However if you are probing
+#   more points than steppers then you will likely have a fixed
+#   minimum value for the range of probed points which you can learn
+#   by observing command output.
+
+#_____________________ SAFE Z HOMING ________________________________
+#[safe_z_home]
+#home_xy_position: 190,210  
+#z_hop: 10
+#z_hop_speed: 20.0
+
+
+
+##################################################################
+########################## EXTRUDER ##############################
+##################################################################
+#On drive E0
+#[extruder]
+#step_pin: PD5
+#dir_pin: PA1
+#enable_pin: !PC6
+#microsteps: 16
+#full_steps_per_rotation: 200
+#rotation_distance: 7.6
+#nozzle_diameter: 0.400
+#filament_diameter: 1.750
+
+
+##################################################################
+########################## EXTRUDER HextrudORT ##############################
+##################################################################
+#On drive E0
+[extruder]
+step_pin: PD5
+dir_pin: !PA1
+enable_pin: !PC6
+microsteps: 16 #HextrudORT-8; Hemera-16
+full_steps_per_rotation: 200
+rotation_distance: 8.052 #HextrudORT-4.524; Hemera-7.824
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+min_extrude_temp: 10
+
+
+#_______________________ HEATER NOZZLE ____________________________
+heater_pin: !PA20
+#_________________________NOZZLE TEMP _____________________________
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC15
+#control: pid
+#pid_Kp: 22.2
+#pid_Ki: 1.08
+#pid_Kd: 114
+min_temp: 0
+max_temp: 350
+pressure_advance = 0.008    #PETG TUCAB=0.070 #ABS FPM=0.06
+max_extrude_only_distance: 300
+
+[tmc2660 extruder]
+cs_pin: PC17
+spi_bus: usart1
+interpolate: False
+run_current: 0.750 #LDO36STH171004AHG-0.750; Hemera-1.150
+sense_resistor: 0.051
+
+[heater_bed]
+heater_pin: !PA19
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC13
+#control: watermark
+min_temp: 0
+max_temp: 130
+
+
+# Fan1 controlled by extruder
+[heater_fan nozzle_cooling_fan]
+pin: PC26
+heater: extruder
+heater_temp: 45
+fan_speed: 1.0
+
+
+#Fan0 and BerdAir
+
+[multi_pin BerdAir]
+pins: PC23  #Berdair !PC11 & Fan0 PC23 & Fan2(compressor) PA0 pins
+
+[fan]
+pin: multi_pin:BerdAir
+
+#Raspberry MCU temperature
+#[temperature_sensor Raspberry Pi 3]
+#sensor_type: rpi_temperature
+
+
+[mcu]
+serial: /dev/serial/by-id/usb-Klipper_sam4e8e_0031385338484A313132303631303337-if00
+
+[sx1509 duex]
+i2c_address: 62 # Address is fixed on duex boards
+
+[printer]
+kinematics: corexy
+max_velocity: 300
+max_accel: 12000
+max_accel_to_decel: 5000
+max_z_velocity: 30
+max_z_accel: 200
+square_corner_velocity: 20.0
+
+[static_digital_output onboard_led]
+pins: !PC2
+
+[output_pin FAN3]
+pin: sx1509_duex:PIN_12
+pwm: True
+hardware_pwm: True # Only hardware PWM fans are supported
+
+[output_pin FAN4]
+pin: sx1509_duex:PIN_7
+pwm: True
+hardware_pwm: True
+
+[output_pin FAN5]
+pin: sx1509_duex:PIN_6
+pwm: True
+hardware_pwm: True
+
+[output_pin FAN6]
+pin: sx1509_duex:PIN_5
+pwm: True
+hardware_pwm: True
+
+[output_pin FAN7]
+pin: sx1509_duex:PIN_4
+pwm: true
+hardware_pwm: true
+
+[output_pin FAN8]
+pin: sx1509_duex:PIN_15
+pwm: True
+hardware_pwm: True
+
+[output_pin GPIO1] # General purpose pin broken out on the duex
+pin: sx1509_duex:PIN_11
+pwm: False
+value: 1
+
+[force_move]
+enable_force_move: true
+
+[virtual_sdcard]
+path:~/gcodes
+
+[pause_resume]
+
+[display_status]
+
+[input_shaper]
+shaper_freq_x: 77.0  # per accelerometer
+shaper_type_x: ei
+shaper_freq_y: 46.0  # per accelerometer
+shaper_type_y: zv
+
+[mcu rpi]
+serial: /tmp/klipper_host_mcu
+
+[adxl345]
+cs_pin: rpi:None
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+   190,210,20  # an example
+
+[include print_area_bed_mesh.cfg]
+
+
+[temperature_sensor raspberry_pi]
+
+sensor_type: temperature_host
+
+min_temp: 10
+
+max_temp: 100
+
+
+
+####################################################################
+############################ BED MESH ##############################
+####################################################################
+
+[bed_mesh]
+speed: 150
+horizontal_move_z: 20
+mesh_min: 20,20
+mesh_max: 350, 338
+probe_count: 5,5
+move_check_distance: 5
+split_delta_z: .025
+fade_start: 1
+fade_end: 3
+fade_target: 0
+#relative_reference_index: 12
+mesh_pps: 2,2
+algorithm: bicubic
+bicubic_tension: 0.2
+
+### Profiles
+#`BED_MESH_PROFILE SAVE=name LOAD=name REMOVE=name`
+#
+#After a BED_MESH_CALIBRATE has been performed, it is possible to save the
+#current mesh state into a named profile. This makes it possible to load
+#a mesh without re-probing the bed. After a profile has been saved using
+#`BED_MESH_PROFILE SAVE=name` the `SAVE_CONFIG` gcode may be executed
+#to write the profile to printer.cfg.
+#
+#Profiles can be loaded by executing `BED_MESH_PROFILE LOAD=name`.
+#
+#It should be noted that each time a BED_MESH_CALIBRATE occurs, the current
+#state is automatically saved to the _default_ profile. If this profile
+#exists it is automatically loaded when Klipper starts. If this behavior
+#is not desirable the _default_ profile can be removed as follows:
+#
+#`BED_MESH_PROFILE REMOVE=default`
+#
+#Any other saved profile can be removed in the same fashion, replacing
+#_default_ with the named profile you wish to remove.
+
+[force_move]
+# Enable commands that force potentially unsafe movement
+enable_force_move: True
+
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [extruder]
+#*# control = pid
+#*# pid_kp = 24.028
+#*# pid_ki = 1.161
+#*# pid_kd = 124.347
+#*#
+#*# [heater_bed]
+#*# control = pid
+#*# pid_kp = 57.201
+#*# pid_ki = 2.889
+#*# pid_kd = 283.146
+#*#
+#*# [probe]
+#*# z_offset = 10.00
+#*#
+#*# [bed_mesh klicky]
+#*# version = 1
+#*# points =
+#*# 	0.001250, 0.024375, -0.068125, -0.010000, -0.028750
+#*# 	-0.019375, 0.049375, 0.024375, 0.021875, 0.054375
+#*# 	-0.034375, 0.047500, 0.036250, 0.056250, 0.053750
+#*# 	-0.038750, 0.085000, 0.033125, 0.079375, 0.053750
+#*# 	-0.036250, 0.113750, 0.100000, 0.166250, 0.173750
+#*# tension = 0.2
+#*# min_x = 20.0
+#*# algo = bicubic
+#*# y_count = 5
+#*# mesh_y_pps = 2
+#*# min_y = 20.0
+#*# x_count = 5
+#*# max_y = 338.0
+#*# mesh_x_pps = 2
+#*# max_x = 350.0
